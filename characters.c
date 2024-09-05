@@ -18,6 +18,8 @@ unsigned int num_bytes(char b) {
   else if((b & 0b11100000) == 0b11000000) { return 2; }
   else if((b & 0b11110000) == 0b11100000) { return 3; }
   else if((b & 0b11111000) == 0b11110000) { return 4; }
+  else if((b & 0b11111100) == 0b11111000) { return 5; }
+  else if((b & 0b11111110) == 0b11111100) { return 6; }
   else { return -1; }
 }
 
@@ -52,28 +54,30 @@ unsigned int utf8_strlen(char* unicode) {
  *   bytes_for("成龙", 3) -> -1
  */
 unsigned int bytes_for(char* unicode, unsigned int n) {
-  return 0;
+    unsigned int ulen = utf8_strlen(unicode); //count total # of utf8 characters
+    unsigned int seen_bytes = 0;
+
+    if(ulen < n) {
+        return -1;
+    }
+
+    for(int i = 0; i < n; i++)
+    {
+        seen_bytes += num_bytes(unicode[seen_bytes]);
+    }
+    
+    return seen_bytes;
 }
 
 int main(int argc, char** argv) {
-  if(argc < 2) {
-    printf("Try running with ./welcome your-name\n");
-    return 1;
-  }
-  char* name = argv[1];
-  int length = strlen(name);
-  unsigned int ulen = utf8_strlen(name);
-  printf("Hi %s, your name is %d characters long according to utf8_strlen.\n", name, ulen);
-  printf("The number of bytes needed for the first character are: %c\n", name[0]);
-
-  printf("The invididual characters are: \n");
-  for(int i = 0; i < length; i += 1) {
-    unsigned char letter = name[i];
-    printf("%d(%x) ", letter, letter);
-  }
-  printf("\n");
-
-  return 0;
+    printf("Instruction | expected result | test\n");
+    printf("bytes_for(\"José\", 3) | 3 | %d\n", bytes_for("José", 3));
+    printf("bytes_for(\"Ülo\", 3) | 4 | %d\n",  bytes_for("Ülo", 3));
+    printf("bytes_for(\"José\", 4) | 5 | %d\n", bytes_for("José", 4));
+    printf("bytes_for(\"成龙\", 1) | 3 | %d\n", bytes_for("成龙", 1));
+    printf("bytes_for(\"成龙\", 2) | 6 | %d\n", bytes_for("成龙", 2));
+    printf("bytes_for(\"成龙\", 3) | -1 | %d\n",bytes_for("成龙", 3));
+    return 0;
 }
 
 
